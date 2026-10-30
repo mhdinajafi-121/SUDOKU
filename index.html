@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#117a65">
+<title>Sudoku — Classic Puzzle</title>
+<style>
+:root{--bg:#f2f6f5;--card:#fff;--text:#182a27;--muted:#667773;--line:#d5dfdc;--strong:#29423c;--accent:#117a65;--accent-soft:#d8f1e9;--related:#edf4f2;--same:#c8eadf;--wrong:#c62828;--fixed:#1b302b;--user:#087fbd;--shadow:0 8px 26px #163d3210}
+[data-theme="dark"]{--bg:#101715;--card:#1a2421;--text:#eaf4f0;--muted:#a7b9b2;--line:#35443f;--strong:#cce2d9;--accent:#55c7a5;--accent-soft:#23483d;--related:#24312d;--same:#315d4e;--wrong:#ff7777;--fixed:#f0f8f4;--user:#77c9ff;--shadow:0 8px 26px #0004}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;transition:background .2s,color .2s}
+button,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);padding:10px 12px;touch-action:manipulation}button:hover{border-color:var(--accent)}button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{max-width:1100px;margin:auto;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:clamp(22px,4vw,30px);margin:0;letter-spacing:-.5px}.brand{display:flex;align-items:center;gap:10px}.logo{width:38px;height:38px;border-radius:12px;background:var(--accent);color:white;display:grid;place-items:center;font-weight:900;font-size:21px}.header-actions{display:flex;gap:7px}
+main{max-width:1100px;margin:auto;padding:0 18px 26px}.layout{display:grid;grid-template-columns:minmax(280px,620px) minmax(260px,1fr);gap:20px;align-items:start}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.metric{background:var(--related);border-radius:12px;padding:10px;text-align:center}.metric span{display:block;font-size:12px;color:var(--muted)}.metric strong{display:block;font-size:19px;margin-top:3px}
+.board{width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(9,1fr);border:2px solid var(--strong);border-radius:5px;overflow:hidden;user-select:none;background:var(--line)}.cell{position:relative;min-width:0;display:grid;place-items:center;background:var(--card);border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:clamp(16px,3.2vw,28px);font-weight:500;padding:0}.cell:nth-child(9n){border-right:0}.cell:nth-child(n+73){border-bottom:0}.cell:nth-child(3n){border-right:2px solid var(--strong)}.cell:nth-child(9n){border-right:0}.cell:nth-child(n+19):nth-child(-n+27),.cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--strong)}.cell.related{background:var(--related)}.cell.same{background:var(--same)}.cell.selected{background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent);z-index:1}.cell.fixed{color:var(--fixed);font-weight:750}.cell.user{color:var(--user)}.cell.wrong{color:var(--wrong)!important}.cell .pencils{position:absolute;inset:1px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:clamp(7px,1.3vw,11px);font-weight:400;color:var(--muted);line-height:1;place-items:center}
+.panel h2{font-size:16px;margin:0 0 12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row button{white-space:nowrap}.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:650}.toolbar{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.toolbar button.active{background:var(--accent-soft);border-color:var(--accent)}.numpad{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:5px;margin:12px 0}.numpad button{padding:12px 0;font-size:clamp(14px,2vw,19px);font-weight:650}.switchrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;color:var(--muted);font-size:14px}.switchrow input{accent-color:var(--accent);width:18px;height:18px}.status{min-height:22px;color:var(--muted);font-size:13px;margin-top:8px}.stats{border-top:1px solid var(--line);margin-top:14px;padding-top:10px}.stats details summary{cursor:pointer;font-weight:650}.stats table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}.stats td,.stats th{text-align:start;padding:6px 4px;border-bottom:1px solid var(--line)}.footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+/* Victory celebration */
+.win-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:#071b16b8;backdrop-filter:blur(5px)}
+.win-overlay.show{display:flex;animation:overlayIn .25s ease-out}
+.win-card{position:relative;overflow:hidden;width:min(440px,100%);text-align:center;padding:30px 22px 24px;border-radius:26px;background:var(--card);color:var(--text);box-shadow:0 24px 80px #0005;animation:cardPop .55s cubic-bezier(.2,1.5,.5,1)}
+.win-trophy{font-size:70px;line-height:1.2;animation:trophyBounce 1s ease-in-out infinite alternate}
+.win-card h2{font-size:clamp(25px,6vw,34px);margin:10px 0 6px;color:var(--accent)}
+.win-card p{margin:6px 0 16px;color:var(--muted)}
+.win-results{display:flex;justify-content:center;gap:10px;margin:18px 0 22px}
+.win-result{flex:1;max-width:150px;border-radius:14px;padding:12px 8px;background:var(--related)}
+.win-result span{display:block;font-size:12px;color:var(--muted)}.win-result strong{display:block;font-size:20px;margin-top:4px}
+.win-buttons{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}.win-buttons button{min-width:125px}
+.confetti{position:fixed;top:-20px;width:10px;height:15px;z-index:1001;pointer-events:none;animation:confettiFall var(--fall,3s) linear forwards;transform:rotate(var(--rot,0deg))}
+@keyframes confettiFall{to{transform:translate3d(var(--drift,30px),110vh,0) rotate(800deg);opacity:.9}}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}@keyframes cardPop{from{transform:scale(.65) translateY(25px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes trophyBounce{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-7px) rotate(5deg)}}
+@media(prefers-reduced-motion:reduce){.confetti,.win-trophy,.win-card{animation:none!important}}
+@media(max-width:800px){.layout{grid-template-columns:1fr;max-width:620px;margin:auto}.panel{order:2}header{padding:12px}.card{padding:12px}main{padding:0 10px 18px}.metrics{margin-bottom:10px}.numpad{gap:4px}.numpad button{padding:10px 0;border-radius:8px}}
+@media(max-width:380px){.header-actions button{padding:8px}.numpad{gap:3px}.numpad button{font-size:14px}.toolbar button{padding:8px 4px;font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="logo">9</div><div><h1>Sudoku</h1><div id="subtitle" style="font-size:12px;color:var(--muted)">A little logic. A lot of calm.</div></div></div>
+ <div class="header-actions"><button id="langBtn" aria-label="Change language">فا</button><button id="themeBtn" aria-label="Toggle theme">☾</button></div>
+</header>
+<main>
+ <div class="metrics">
+  <div class="metric"><span id="difficultyLabel">Difficulty</span><strong id="difficultyValue">—</strong></div>
+  <div class="metric"><span id="timeLabel">Time</span><strong id="timer">00:00</strong></div>
+  <div class="metric"><span id="mistakesLabel">Mistakes</span><strong id="mistakes">0</strong></div>
+ </div>
+ <div class="layout">
+  <section class="card"><div id="board" class="board" role="grid" aria-label="Sudoku board"></div></section>
+  <aside class="card panel">
+   <h2 id="newTitle">Start a new game</h2>
+   <div class="row"><select id="difficulty" aria-label="Difficulty"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select><button id="newGame" class="primary">New game</button></div>
+   <div class="toolbar">
+    <button id="notesBtn">✎ Notes</button><button id="hintBtn">💡 Hint</button><button id="eraseBtn">⌫ Erase</button>
+    <button id="undoBtn">↶ Undo</button><button id="redoBtn">↷ Redo</button><button id="resumeBtn">⤴ Resume</button>
+   </div>
+   <div class="numpad" id="numpad"></div>
+   <label class="switchrow"><span id="mistakeToggleLabel">Show mistakes in red</span><input id="mistakeToggle" type="checkbox" checked></label>
+   <div id="status" class="status" aria-live="polite">Select a cell, then choose a number.</div>
+   <div class="stats"><details><summary id="statsTitle">Statistics</summary><table><thead><tr><th id="statsDifficulty">Level</th><th id="statsWins">Wins</th><th id="statsBest">Best time</th></tr></thead><tbody id="statsBody"></tbody></table></details></div>
+   <div style="margin-top:12px;color:var(--muted);font-size:12px" id="keyboardHelp">Keyboard: 1–9 enter · Backspace erase · arrows move</div>
+  </aside>
+ </div>
+ <div class="footer" id="footerText">Progress is saved automatically on this device.</div>
+</main>
+<div id="winOverlay" class="win-overlay" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+ <div class="win-card">
+  <div class="win-trophy" aria-hidden="true">🏆</div>
+  <h2 id="winTitle">You did it!</h2>
+  <p id="winMessage">Puzzle completed. You're a Sudoku champion!</p>
+  <div class="win-results"><div class="win-result"><span id="winTimeLabel">Your time</span><strong id="winTime">00:00</strong></div><div class="win-result"><span id="winMistakesLabel">Mistakes</span><strong id="winMistakes">0</strong></div></div>
+  <div id="winBadge" style="font-size:14px;font-weight:700;margin:-8px 0 18px;color:var(--accent)"></div>
+  <div class="win-buttons"><button id="winAgain" class="primary">🎮 Play again</button><button id="winClose">✨ Celebrate!</button></div>
+ </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const blankBoard=()=>Array.from({length:9},()=>Array(9).fill(0));
+let board=blankBoard(),solution=blankBoard(),fixed=blankBoard(),notes={},selected=[0,0],mistakes=0,elapsed=0,won=false,notesMode=false,showMistakes=true,difficulty='easy',undoStack=[],redoStack=[],started=false,lang=localStorage.getItem('sdk-lang')||'en',theme=localStorage.getItem('sdk-theme')||'light',tick=null;
+const translations={
+ en:{subtitle:'A little logic. A lot of calm.',difficulty:'Difficulty',time:'Time',mistakes:'Mistakes',newTitle:'Start a new game',easy:'Easy',medium:'Medium',hard:'Hard',expert:'Expert',newGame:'New game',notes:'✎ Notes',hint:'💡 Hint',erase:'⌫ Erase',undo:'↶ Undo',redo:'↷ Redo',resume:'⤴ Resume',showMistakes:'Show mistakes in red',select:'Select a cell, then choose a number.',saved:'Progress saved on this device.',win:'Puzzle completed! Excellent work.',winTitle:'You did it!',winMessage:'Puzzle completed. You are a Sudoku champion!',winTime:'Your time',winMistakes:'Mistakes',playAgain:'🎮 Play again',celebrate:'✨ Celebrate!',perfect:'🌟 Perfect game — not a single mistake!',great:'🎉 Amazing work! Keep shining!',unique:'Generating a unique puzzle…',stats:'Statistics',level:'Level',wins:'Wins',best:'Best time',keyboard:'Keyboard: 1–9 enter · Backspace erase · arrows move',noSave:'No saved game found.',confirm:'Start a new puzzle? Your current puzzle will be replaced.',footer:'Progress is saved automatically on this device.',hintDone:'Hint entered.',mistake:'That number does not match the solution.'},
+ fa:{subtitle:'کمی منطق، آرامش بیشتر.',difficulty:'سطح دشواری',time:'زمان',mistakes:'اشتباه‌ها',newTitle:'شروع بازی جدید',easy:'آسان',medium:'متوسط',hard:'سخت',expert:'حرفه‌ای',newGame:'بازی جدید',notes:'✎ یادداشت',hint:'💡 راهنما',erase:'⌫ پاک‌کن',undo:'↶ واگرد',redo:'↷ ازنو',resume:'⤴ ادامه',showMistakes:'نمایش اشتباه‌ها با رنگ قرمز',select:'خانه‌ای را انتخاب کنید و سپس عدد را بزنید.',saved:'بازی در همین دستگاه ذخیره می‌شود.',win:'آفرین! جدول را حل کردید.',winTitle:'آفرین! تو موفق شدی!',winMessage:'جدول را حل کردی؛ تو قهرمان سودوکو هستی!',winTime:'زمان شما',winMistakes:'اشتباه‌ها',playAgain:'🎮 بازی بعدی',celebrate:'✨ دوباره جشن بگیر!',perfect:'🌟 بازی بی‌نقص؛ حتی یک اشتباه هم نداشتی!',great:'🎉 فوق‌العاده بود! همین‌طور بدرخش!',unique:'در حال ساخت جدول با راه‌حل یکتا…',stats:'آمار',level:'سطح',wins:'برد',best:'بهترین زمان',keyboard:'صفحه‌کلید: اعداد ۱ تا ۹، Backspace برای پاک‌کردن و کلیدهای جهت',noSave:'بازی ذخیره‌شده‌ای پیدا نشد.',confirm:'بازی جدید شروع شود؟ جدول فعلی جایگزین می‌شود.',footer:'پیشرفت بازی به‌طور خودکار در این دستگاه ذخیره می‌شود.',hintDone:'راهنما وارد شد.',mistake:'این عدد با پاسخ صحیح مطابقت ندارد.'}
+};
+const t=k=>translations[lang][k]||k;
+function localize(){document.documentElement.lang=lang;document.documentElement.dir=lang==='fa'?'rtl':'ltr';document.documentElement.dataset.theme=theme;
+['difficultyLabel','timeLabel','mistakesLabel','newTitle','mistakeToggleLabel','statsTitle','statsDifficulty','statsWins','statsBest','keyboardHelp','footerText','subtitle'].forEach(id=>{let map={difficultyLabel:'difficulty',timeLabel:'time',mistakesLabel:'mistakes',newTitle:'newTitle',mistakeToggleLabel:'showMistakes',statsTitle:'stats',statsDifficulty:'level',statsWins:'wins',statsBest:'best',keyboardHelp:'keyboard',footerText:'footer',subtitle:'subtitle'};$(id).textContent=t(map[id])});
+$('newGame').textContent=t('newGame');$('winTitle').textContent=t('winTitle');$('winMessage').textContent=t('winMessage');$('winTimeLabel').textContent=t('winTime');$('winMistakesLabel').textContent=t('winMistakes');$('winAgain').textContent=t('playAgain');$('winClose').textContent=t('celebrate');$('notesBtn').textContent=t('notes');$('hintBtn').textContent=t('hint');$('eraseBtn').textContent=t('erase');$('undoBtn').textContent=t('undo');$('redoBtn').textContent=t('redo');$('resumeBtn').textContent=t('resume');$('themeBtn').textContent=theme==='dark'?'☀':'☾';$('langBtn').textContent=lang==='fa'?'EN':'فا';
+[...$('difficulty').options].forEach(o=>o.textContent=t(o.value));$('difficultyValue').textContent=started?t(difficulty):'—';renderStats();renderBoard();}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function valid(b,r,c,n){for(let i=0;i<9;i++)if(b[r][i]===n||b[i][c]===n)return false;let sr=Math.floor(r/3)*3,sc=Math.floor(c/3)*3;for(let y=sr;y<sr+3;y++)for(let x=sc;x<sc+3;x++)if(b[y][x]===n)return false;return true}
+function fill(b){let best=null,cands=null;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(!b[r][c]){let cs=[];for(let n=1;n<=9;n++)if(valid(b,r,c,n))cs.push(n);if(!cs.length)return false;if(cands===null||cs.length<cands.length){best=[r,c];cands=cs;if(cs.length===1)break}}if(!best)return true;let [r,c]=best;for(let n of shuffle(cands)){b[r][c]=n;if(fill(b))return true;b[r][c]=0}return false}
+function countSolutions(src,limit=2){let b=src.map(r=>r.slice()),count=0;function solve(){if(count>=limit)return;let best=null,cands=null;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(!b[r][c]){let cs=[];for(let n=1;n<=9;n++)if(valid(b,r,c,n))cs.push(n);if(!cs.length)return;if(cands===null||cs.length<cands.length){best=[r,c];cands=cs}}if(!best){count++;return}let [r,c]=best;for(let n of cands){b[r][c]=n;solve();b[r][c]=0;if(count>=limit)return}}solve();return count}
+function generate(level){let sol=blankBoard();fill(sol);let puzzle=sol.map(r=>r.slice()),target={easy:36,medium:45,hard:52,expert:58}[level],indices=shuffle(Array.from({length:81},(_,i)=>i)),removed=0;
+ for(let idx of indices){if(removed>=target)break;let r=Math.floor(idx/9),c=idx%9,v=puzzle[r][c];puzzle[r][c]=0;if(countSolutions(puzzle,2)===1)removed++;else puzzle[r][c]=v}
+ return {puzzle,sol}}
+function snapshot(){return {board:board.map(r=>r.slice()),notes:JSON.parse(JSON.stringify(notes)),mistakes,elapsed,selected:selected.slice(),difficulty,won}}
+function restoreSnap(s){board=s.board.map(r=>r.slice());notes=s.notes||{};mistakes=s.mistakes;elapsed=s.elapsed;selected=s.selected;difficulty=s.difficulty;won=s.won||false;renderAll();save()}
+function pushUndo(){undoStack.push(snapshot());if(undoStack.length>150)undoStack.shift();redoStack=[]}
+function startGame(level){$('status').textContent=t('unique');setTimeout(()=>{let g=generate(level);board=g.puzzle;solution=g.sol;fixed=board.map(r=>r.map(v=>v!==0));difficulty=level;selected=[0,0];notes={};mistakes=0;elapsed=0;won=false;notesMode=false;started=true;undoStack=[];redoStack=[];$('notesBtn').classList.remove('active');save();renderAll();$('status').textContent=t('select');if(tick)clearInterval(tick);tick=setInterval(()=>{if(started&&!won){elapsed++;$('timer').textContent=formatTime(elapsed);save()}},1000)},30)}
+function formatTime(s){let h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;return (h?h.toString().padStart(2,'0')+':':'')+m.toString().padStart(2,'0')+':'+sec.toString().padStart(2,'0')}
+function save(){if(!started)return;localStorage.setItem('sudoku-save',JSON.stringify({board,solution,fixed,notes,selected,mistakes,elapsed,difficulty,won,started}));localStorage.setItem('sudoku-stats',JSON.stringify(stats))}
+function resume(){let s=localStorage.getItem('sudoku-save');if(!s){$('status').textContent=t('noSave');return}try{let x=JSON.parse(s);({board,solution,fixed,notes,selected,mistakes,elapsed,difficulty,won,started}=x);undoStack=[];redoStack=[];renderAll();$('status').textContent=t('saved');if(tick)clearInterval(tick);tick=setInterval(()=>{if(started&&!won){elapsed++;$('timer').textContent=formatTime(elapsed);save()}},1000)}catch(e){$('status').textContent=t('noSave')}}
+function enter(n){let [r,c]=selected;if(!started||won||fixed[r][c])return;pushUndo();if(notesMode){let k=r+','+c;notes[k]=notes[k]||[];notes[k]=notes[k].includes(n)?notes[k].filter(v=>v!==n):[...notes[k],n].sort();}else{board[r][c]=n;delete notes[r+','+c];if(showMistakes&&n!==solution[r][c])mistakes++;if(isWon())finish()}renderAll();if(won){$('status').textContent=t('win')}else if(showMistakes&&board[r][c]&&board[r][c]!==solution[r][c])$('status').textContent=t('mistake');else $('status').textContent=t('select');save()}
+function erase(){let [r,c]=selected;if(!started||won||fixed[r][c])return;pushUndo();board[r][c]=0;delete notes[r+','+c];renderAll();save()}
+function hint(){let [r,c]=selected;if(!started||won||fixed[r][c])return;pushUndo();board[r][c]=solution[r][c];delete notes[r+','+c];if(isWon())finish();renderAll();$('status').textContent=t('hintDone');save()}
+function isWon(){return board.every((row,r)=>row.every((v,c)=>v===solution[r][c]))}
+function finish(){
+ if(won)return;won=true;let all=JSON.parse(localStorage.getItem('sudoku-stats')||'{}'),s=all[difficulty]||{wins:0,best:null};s.wins++;if(s.best===null||elapsed<s.best)s.best=elapsed;all[difficulty]=s;localStorage.setItem('sudoku-stats',JSON.stringify(all));$('status').textContent=t('win');renderStats();save();showVictory()
+}
+function showVictory(){
+ $('winTime').textContent=formatTime(elapsed);$('winMistakes').textContent=String(mistakes).replace(/\d/g,d=>lang==='fa'?'۰۱۲۳۴۵۶۷۸۹'[+d]:d);$('winBadge').textContent=mistakes===0?t('perfect'):t('great');$('winMessage').textContent=t('winMessage');$('winOverlay').classList.add('show');confettiBurst();playVictorySound();$('winAgain').focus()
+}
+function hideVictory(){$('winOverlay').classList.remove('show')}
+function confettiBurst(){
+ document.querySelectorAll('.confetti').forEach(e=>e.remove());if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const colors=['#f94144','#f9c74f','#43aa8b','#577590','#f3722c','#b5179e','#4cc9f0'];for(let i=0;i<100;i++){let e=document.createElement('i');e.className='confetti';e.style.left=(Math.random()*100)+'vw';e.style.backgroundColor=colors[i%colors.length];e.style.setProperty('--fall',(2.3+Math.random()*2.4)+'s');e.style.setProperty('--drift',((Math.random()-.5)*260)+'px');e.style.setProperty('--rot',(Math.random()*360)+'deg');e.style.animationDelay=(Math.random()*.8)+'s';if(i%4===0)e.style.borderRadius='50%';document.body.appendChild(e);setTimeout(()=>e.remove(),6000)}
+}
+function playVictorySound(){try{let C=window.AudioContext||window.webkitAudioContext;if(!C)return;let ctx=new C(),notes=[523.25,659.25,783.99,1046.5];notes.forEach((f,i)=>{let o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,ctx.currentTime+i*.13);g.gain.exponentialRampToValueAtTime(.13,ctx.currentTime+i*.13+.03);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+i*.13+.28);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime+i*.13);o.stop(ctx.currentTime+i*.13+.3)});setTimeout(()=>ctx.close(),1200)}catch(e){}}
+
+function renderBoard(){let root=$('board');root.innerHTML='';let [sr,sc]=selected,selVal=board[sr]?.[sc];for(let r=0;r<9;r++)for(let c=0;c<9;c++){let v=board[r][c],el=document.createElement('button');el.className='cell';el.setAttribute('role','gridcell');el.setAttribute('aria-label',`row ${r+1} column ${c+1}${v?', '+v:''}`);if(fixed[r]?.[c])el.classList.add('fixed');else if(v)el.classList.add('user');if(r===sr&&c===sc)el.classList.add('selected');else if(r===sr||c===sc||(Math.floor(r/3)===Math.floor(sr/3)&&Math.floor(c/3)===Math.floor(sc/3)))el.classList.add('related');if(v&&selVal===v)el.classList.add('same');if(v&&!fixed[r][c]&&showMistakes&&v!==solution[r][c])el.classList.add('wrong');if(v)el.textContent=lang==='fa'?String(v).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[+d]):v;else{let ns=notes[r+','+c]||[];if(ns.length){let p=document.createElement('div');p.className='pencils';for(let n=1;n<=9;n++){let span=document.createElement('span');span.textContent=ns.includes(n)?(lang==='fa'?'۰۱۲۳۴۵۶۷۸۹'[n]:n):'';p.appendChild(span)}el.appendChild(p)}}el.addEventListener('click',()=>{selected=[r,c];renderBoard()});root.appendChild(el)}}
+function renderAll(){renderBoard();$('timer').textContent=formatTime(elapsed);$('mistakes').textContent=mistakes;$('difficultyValue').textContent=started?t(difficulty):'—';$('notesBtn').classList.toggle('active',notesMode);$('mistakeToggle').checked=showMistakes;renderStats()}
+let stats={};function renderStats(){stats=JSON.parse(localStorage.getItem('sudoku-stats')||'{}');let body=$('statsBody');if(!body)return;body.innerHTML='';for(let level of ['easy','medium','hard','expert']){let s=stats[level]||{wins:0,best:null},tr=document.createElement('tr');tr.innerHTML=`<td>${t(level)}</td><td>${s.wins||0}</td><td>${s.best==null?'—':formatTime(s.best)}</td>`;body.appendChild(tr)}}
+$('newGame').onclick=()=>{hideVictory();if(started&&!won&&!confirm(t('confirm')))return;startGame($('difficulty').value)};
+$('winAgain').onclick=()=>{hideVictory();startGame($('difficulty').value)};$('winClose').onclick=hideVictory;$('winOverlay').addEventListener('click',e=>{if(e.target===$('winOverlay'))hideVictory()});document.addEventListener('keydown',e=>{if(e.key==='Escape')hideVictory()});
+$('difficulty').onchange=()=>difficulty=$('difficulty').value;
+$('langBtn').onclick=()=>{lang=lang==='en'?'fa':'en';localStorage.setItem('sdk-lang',lang);localize()};
+$('themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.setItem('sdk-theme',theme);localize()};
+$('notesBtn').onclick=()=>{notesMode=!notesMode;$('notesBtn').classList.toggle('active',notesMode)};
+$('hintBtn').onclick=hint;$('eraseBtn').onclick=erase;$('resumeBtn').onclick=resume;
+$('undoBtn').onclick=()=>{if(!undoStack.length)return;redoStack.push(snapshot());restoreSnap(undoStack.pop())};
+$('redoBtn').onclick=()=>{if(!redoStack.length)return;undoStack.push(snapshot());restoreSnap(redoStack.pop())};
+$('mistakeToggle').onchange=e=>{showMistakes=e.target.checked;renderBoard()};
+for(let n=1;n<=9;n++){let b=document.createElement('button');b.textContent=n;b.onclick=()=>enter(n);$('numpad').appendChild(b)}
+document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;let [r,c]=selected;if(/^[1-9]$/.test(e.key)){enter(+e.key)}else if(e.key==='Backspace'||e.key==='Delete'){erase()}else if(e.key.startsWith('Arrow')){e.preventDefault();if(e.key==='ArrowUp')r=(r+8)%9;if(e.key==='ArrowDown')r=(r+1)%9;if(e.key==='ArrowLeft')c=(c+8)%9;if(e.key==='ArrowRight')c=(c+1)%9;selected=[r,c];renderBoard()}});
+localize();resume();
+</script>
+</body></html>
